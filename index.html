@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Egypt Tourism Visitor Prediction</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f4f7fb;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: auto;
+        }
+
+        .header {
+            background: #1f3c5b;
+            color: white;
+            padding: 30px;
+            border-radius: 15px 15px 0 0;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+        }
+
+        .form-card {
+            background: white;
+            padding: 30px;
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input,
+        select {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #1f3c5b;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 25px;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            background: #1f3c5b;
+            color: white;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #162d45;
+        }
+
+        #loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+            color: #555;
+        }
+
+        #error {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background: #ffe5e5;
+            color: #b00020;
+        }
+
+        #result {
+            display: none;
+            margin-top: 25px;
+            padding: 25px;
+            border-radius: 12px;
+            background: #f1f7ff;
+            border: 1px solid #d5e7ff;
+        }
+
+        .result-title {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #1f3c5b;
+        }
+
+        .result-item {
+            margin: 12px 0;
+            font-size: 17px;
+        }
+
+        .result-item strong {
+            color: #333;
+        }
+
+        .recommendation {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background: white;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 650px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-group.full {
+                grid-column: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <h1>🇪🇬 Egypt Tourism Visitor Prediction</h1>
+        <p>Predict visitor count and crowd level for tourist locations</p>
+    </div>
+
+    <div class="form-card">
+
+        <div class="form-grid">
+
+            <div class="form-group">
+                <label for="date">Date</label>
+                <input type="date" id="date" value="2025-12-20">
+            </div>
+
+            <div class="form-group">
+                <label for="location">Location</label>
+
+                <select id="location">
+
+                    <option>Abu Simbel Temples</option>
+                    <option>Bibliotheca Alexandrina</option>
+                    <option>Catacombs of Kom El Shoqafa</option>
+                    <option>Citadel of Saladin</option>
+                    <option>Coptic Cairo</option>
+                    <option>Dahab Blue Hole</option>
+                    <option>Edfu Temple</option>
+                    <option>Giftun Island</option>
+                    <option>Grand Egyptian Museum</option>
+                    <option>Hatshepsut Temple</option>
+                    <option selected>Karnak Temple</option>
+                    <option>Khan El Khalili</option>
+                    <option>Kom Ombo Temple</option>
+                    <option>Luxor Temple</option>
+                    <option>Montaza Palace</option>
+                    <option>Naama Bay</option>
+                    <option>Nubian Museum</option>
+                    <option>Philae Temple</option>
+                    <option>Pyramids of Giza</option>
+                    <option>Qaitbay Citadel</option>
+                    <option>Ras Mohammed National Park</option>
+                    <option>Saint Catherine Monastery</option>
+                    <option>Siwa Oasis</option>
+                    <option>Valley of the Kings</option>
+                    <option>White Desert</option>
+
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="temperature">Temperature (°C)</label>
+                <input type="number" id="temperature" value="25">
+            </div>
+
+            <div class="form-group">
+                <label for="holiday">Holiday</label>
+
+                <select id="holiday">
+                    <option value="0">No</option>
+                    <option value="1">Yes</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="weather">Weather</label>
+
+                <select id="weather">
+                    <option>Clear</option>
+                    <option>Hot & Sunny</option>
+                    <option>Rainy</option>
+                    <option>Very Hot</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="time">Time</label>
+
+                <select id="time">
+                    <option>Morning (08:00-11:00)</option>
+                    <option>Midday (11:00-14:00)</option>
+                    <option>Afternoon (14:00-17:00)</option>
+                    <option>Evening (17:00-20:00)</option>
+                </select>
+            </div>
+
+            <div class="form-group full">
+                <label for="event">Event</label>
+
+                <select id="event">
+
+                    <option>None</option>
+                    <option>Abu Simbel Sun Festival</option>
+                    <option>Alexandria Winter Cultural Festival</option>
+                    <option>Cairo Citadel Music Festival</option>
+                    <option>Cairo International Book Fair</option>
+                    <option>Cairo International Film Festival Preview</option>
+                    <option>Coptic Christmas</option>
+                    <option>Eid Al-Adha</option>
+                    <option>Eid Al-Adha Holiday</option>
+                    <option>Eid Al-Fitr</option>
+                    <option>Eid Al-Fitr Holiday</option>
+                    <option>Formula E Cairo Weekend</option>
+                    <option>GEM Anniversary Gala</option>
+                    <option>GEM Special Exhibition Opening</option>
+                    <option>Islamic New Year (Hijri)</option>
+                    <option>January 25 Revolution Anniversary</option>
+                    <option>July 23 Revolution Day</option>
+                    <option>June 30 Revolution Anniversary</option>
+                    <option>Labour Day</option>
+                    <option>Luxor African Film Festival</option>
+                    <option>Mawlid Al-Nabi (Prophet's Birthday)</option>
+                    <option>October War / Armed Forces Day</option>
+                    <option>Sham El-Nessim / Coptic Easter Monday</option>
+                    <option>Sinai Liberation Day</option>
+                    <option>Siwa Siyaha Festival</option>
+                    <option>Sound & Light Festival Special Show</option>
+
+                </select>
+            </div>
+
+        </div>
+
+        <button onclick="predict()">Predict Visitors</button>
+
+        <div id="loading">
+            Predicting visitors...
+        </div>
+
+        <div id="error"></div>
+
+        <div id="result">
+
+            <div class="result-title">
+                Prediction Result
+            </div>
+
+            <div class="result-item">
+                📍 <strong>Location:</strong>
+                <span id="resultLocation"></span>
+            </div>
+
+            <div class="result-item">
+                📅 <strong>Date:</strong>
+                <span id="resultDate"></span>
+            </div>
+
+            <div class="result-item">
+                👥 <strong>Predicted Visitors:</strong>
+                <span id="resultVisitors"></span>
+            </div>
+
+            <div class="result-item">
+                🚦 <strong>Crowd Level:</strong>
+                <span id="resultCrowd"></span>
+            </div>
+
+            <div class="recommendation">
+                💡 <strong>Recommendation:</strong>
+                <p id="resultRecommendation"></p>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+async function predict() {
+
+    const date = document.getElementById("date").value;
+    const location = document.getElementById("location").value;
+    const temperature = Number(
+        document.getElementById("temperature").value
+    );
+    const holiday = Number(
+        document.getElementById("holiday").value
+    );
+    const weather = document.getElementById("weather").value;
+    const time = document.getElementById("time").value;
+    const event = document.getElementById("event").value;
+
+    const loading = document.getElementById("loading");
+    const error = document.getElementById("error");
+    const result = document.getElementById("result");
+
+    loading.style.display = "block";
+    error.style.display = "none";
+    result.style.display = "none";
+
+    const data = {
+        Date: date,
+        Location: location,
+        Temperature_C: temperature,
+        Is_Holiday: holiday,
+        Weather: weather,
+        Time: time,
+        Event: event
+    };
+
+    try {
+
+        const response = await fetch(
+            "http://127.0.0.1:8000/predict",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+
+                body: JSON.stringify(data)
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(
+                "API Error: " + response.status
+            );
+        }
+
+        const resultData = await response.json();
+
+        document.getElementById("resultLocation").textContent =
+            resultData.location;
+
+        document.getElementById("resultDate").textContent =
+            resultData.date;
+
+        document.getElementById("resultVisitors").textContent =
+            resultData.predicted_visitor_count.toLocaleString();
+
+        document.getElementById("resultCrowd").textContent =
+            resultData.crowd_level;
+
+        document.getElementById("resultRecommendation").textContent =
+            resultData.recommendation;
+
+        result.style.display = "block";
+
+    } catch (errorMessage) {
+
+        error.style.display = "block";
+
+        error.textContent =
+            "Failed to connect to the API. Make sure FastAPI is running on port 8000.";
+
+        console.error(errorMessage);
+
+    } finally {
+
+        loading.style.display = "none";
+
+    }
+}
+
+</script>
+
+</body>
+</html>
