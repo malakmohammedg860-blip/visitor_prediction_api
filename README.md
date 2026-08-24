@@ -84,7 +84,7 @@ visitor\_prediction\_model.json
 
 visitor\_prediction\_metadata.pkl
 
-🚀 How to Run
+How to Run
 
 1\. Install dependencies
 
