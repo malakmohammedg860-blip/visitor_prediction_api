@@ -6,18 +6,12 @@ import pandas as pd
 import numpy as np
 import os
 
-# ==========================================
-# APP
-# ==========================================
-
 app = FastAPI(
     title="Egypt Tourism Visitor Prediction API",
     version="1.0"
 )
 
-# ==========================================
-# CORS 
-# ==========================================ّ
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -27,9 +21,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ==========================================
-# PATHS
-# ==========================================
+
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -38,9 +30,7 @@ MODEL_PATH = os.path.join(
     "visitor_prediction_model.json"
 )
 
-# ==========================================
-# LOAD MODEL
-# ==========================================
+
 
 model = xgb.XGBRegressor()
 
@@ -51,9 +41,6 @@ print("MODEL LOADED SUCCESSFULLY")
 print("===================================")
 print("Model:", MODEL_PATH)
 
-# ==========================================
-# FEATURES
-# ==========================================
 
 feature_names = model.get_booster().feature_names
 
@@ -61,9 +48,6 @@ print("Number of features:", len(feature_names))
 print("Feature names:")
 print(feature_names)
 
-# ==========================================
-# REQUEST MODEL
-# ==========================================
 
 class PredictionRequest(BaseModel):
 
@@ -75,16 +59,12 @@ class PredictionRequest(BaseModel):
     Time: str
     Event: str
 
-# ==========================================
-# PREDICTION
-# ==========================================
+
 
 @app.post("/predict")
 def predict(data: PredictionRequest):
 
-    # -----------------------------
-    # Date
-    # -----------------------------
+
 
     date = pd.to_datetime(data.Date)
 
@@ -92,9 +72,7 @@ def predict(data: PredictionRequest):
 
     month = date.month
 
-    # -----------------------------
-    # Season
-    # -----------------------------
+
 
     if month in [12, 1, 2]:
         season = "Winter"
@@ -108,77 +86,59 @@ def predict(data: PredictionRequest):
     else:
         season = "Autumn"
 
-    # -----------------------------
-    # Create empty feature row
-    # -----------------------------
+   
 
     input_data = pd.DataFrame(
         np.zeros((1, len(feature_names))),
         columns=feature_names
     )
 
-    # -----------------------------
-    # Numeric feature
-    # -----------------------------
+    
 
     if "Temperature_C" in input_data.columns:
         input_data["Temperature_C"] = data.Temperature_C
 
-    # -----------------------------
-    # Holiday
-    # -----------------------------
+   
 
     if "Is_Holiday" in input_data.columns:
         input_data["Is_Holiday"] = data.Is_Holiday
 
-    # -----------------------------
-    # Location
-    # -----------------------------
+  
 
     location_column = "Location_" + data.Location
 
     if location_column in input_data.columns:
         input_data[location_column] = 1
 
-    # -----------------------------
-    # Weather
-    # -----------------------------
+  
 
     weather_column = "Weather_" + data.Weather
 
     if weather_column in input_data.columns:
         input_data[weather_column] = 1
 
-    # -----------------------------
-    # Day of week
-    # -----------------------------
+   
 
     day_column = "Day_of_week_" + day_of_week
 
     if day_column in input_data.columns:
         input_data[day_column] = 1
 
-    # -----------------------------
-    # Season
-    # -----------------------------
+    
 
     season_column = "Season_" + season
 
     if season_column in input_data.columns:
         input_data[season_column] = 1
 
-    # -----------------------------
-    # Time
-    # -----------------------------
+
 
     time_column = "Time_" + data.Time
 
     if time_column in input_data.columns:
         input_data[time_column] = 1
 
-    # -----------------------------
-    # Event
-    # -----------------------------
+    
 
     if data.Event != "None":
 
@@ -187,17 +147,12 @@ def predict(data: PredictionRequest):
         if event_column in input_data.columns:
             input_data[event_column] = 1
 
-    # ==========================================
-    # PREDICT
-    # ==========================================
 
     prediction = model.predict(input_data)[0]
 
     prediction = max(0, int(round(prediction)))
 
-    # ==========================================
-    # CROWD LEVEL
-    # ==========================================
+   
 
     if prediction < 1000:
 
@@ -211,9 +166,6 @@ def predict(data: PredictionRequest):
 
         crowd_level = "High"
 
-    # ==========================================
-    # RECOMMENDATION
-    # ==========================================
 
     if crowd_level == "High":
 
@@ -236,9 +188,7 @@ def predict(data: PredictionRequest):
             "It is a good time to visit."
         )
 
-    # ==========================================
-    # RESPONSE
-    # ==========================================
+   
 
     return {
         "location": data.Location,
@@ -249,9 +199,7 @@ def predict(data: PredictionRequest):
     }
 
 
-# ==========================================
-# ROOT
-# ==========================================
+
 
 @app.get("/")
 def root():
