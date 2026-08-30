@@ -11,8 +11,6 @@ app = FastAPI(
     version="1.0"
 )
 
-
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -21,8 +19,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 MODEL_PATH = os.path.join(
@@ -30,17 +26,11 @@ MODEL_PATH = os.path.join(
     "visitor_prediction_model.json"
 )
 
-
-
 model = xgb.XGBRegressor()
-
 model.load_model(MODEL_PATH)
 
-print("===================================")
 print("MODEL LOADED SUCCESSFULLY")
-print("===================================")
 print("Model:", MODEL_PATH)
-
 
 feature_names = model.get_booster().feature_names
 
@@ -50,7 +40,6 @@ print(feature_names)
 
 
 class PredictionRequest(BaseModel):
-
     Date: str
     Location: str
     Temperature_C: float
@@ -60,85 +49,58 @@ class PredictionRequest(BaseModel):
     Event: str
 
 
-
 @app.post("/predict")
 def predict(data: PredictionRequest):
-
-
 
     date = pd.to_datetime(data.Date)
 
     day_of_week = date.day_name()
-
     month = date.month
-
-
 
     if month in [12, 1, 2]:
         season = "Winter"
-
     elif month in [3, 4, 5]:
         season = "Spring"
-
     elif month in [6, 7, 8]:
         season = "Summer"
-
     else:
         season = "Autumn"
-
-   
 
     input_data = pd.DataFrame(
         np.zeros((1, len(feature_names))),
         columns=feature_names
     )
 
-    
-
     if "Temperature_C" in input_data.columns:
         input_data["Temperature_C"] = data.Temperature_C
 
-   
-
     if "Is_Holiday" in input_data.columns:
         input_data["Is_Holiday"] = data.Is_Holiday
-
-  
 
     location_column = "Location_" + data.Location
 
     if location_column in input_data.columns:
         input_data[location_column] = 1
 
-  
-
     weather_column = "Weather_" + data.Weather
 
     if weather_column in input_data.columns:
         input_data[weather_column] = 1
-
-   
 
     day_column = "Day_of_week_" + day_of_week
 
     if day_column in input_data.columns:
         input_data[day_column] = 1
 
-    
-
     season_column = "Season_" + season
 
     if season_column in input_data.columns:
         input_data[season_column] = 1
 
-
-
     time_column = "Time_" + data.Time
 
     if time_column in input_data.columns:
         input_data[time_column] = 1
-
-    
 
     if data.Event != "None":
 
@@ -147,25 +109,18 @@ def predict(data: PredictionRequest):
         if event_column in input_data.columns:
             input_data[event_column] = 1
 
-
     prediction = model.predict(input_data)[0]
 
     prediction = max(0, int(round(prediction)))
 
-   
-
-    if prediction < 1000:
-
+    if prediction < 2283:
         crowd_level = "Low"
 
-    elif prediction < 3000:
-
+    elif prediction <= 4504:
         crowd_level = "Medium"
 
     else:
-
         crowd_level = "High"
-
 
     if crowd_level == "High":
 
@@ -188,8 +143,6 @@ def predict(data: PredictionRequest):
             "It is a good time to visit."
         )
 
-   
-
     return {
         "location": data.Location,
         "date": data.Date,
@@ -197,8 +150,6 @@ def predict(data: PredictionRequest):
         "crowd_level": crowd_level,
         "recommendation": recommendation
     }
-
-
 
 
 @app.get("/")
