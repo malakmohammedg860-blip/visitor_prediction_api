@@ -8,7 +8,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-RUN ls -lh tourism_recommendation_model.pkl
+RUN ls -lh tourism_recommendation_model.joblib
 
 EXPOSE 8000
 
